@@ -1,3 +1,6 @@
+mod meta;
+mod config;
+
 fn main() {
-    println!("Hello, world!");
+	println!("inetdx is work in progress");
 }

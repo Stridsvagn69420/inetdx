@@ -1,6 +1,10 @@
 [package]
 name = "inetdx"
+description = "Rust implementation of inetd internal services"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+apputils = "0.1.5"
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
