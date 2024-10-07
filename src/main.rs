@@ -1,6 +1,9 @@
 mod meta;
 mod config;
 
+use config::Config;
+
 fn main() {
-	println!("inetdx is work in progress");
+	let conf = Config::load().unwrap_or_default();
+	println!("{}", conf);
 }
