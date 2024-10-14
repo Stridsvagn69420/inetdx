@@ -1,4 +1,4 @@
-use crate::meta::{APP_NAME, CONFIG_FILE};
+use crate::shared::{APP_NAME, CONFIG_FILE};
 
 use std::default::Default;
 use std::fmt;
@@ -56,7 +56,8 @@ pub(crate) struct Config {
 	pub daytime: Basic,
 	pub qotd: Basic,
 	pub chargen: Basic,
-	pub time: Basic
+	pub time: Basic,
+	pub hostname: Basic
 }
 
 impl Config {
@@ -77,7 +78,8 @@ impl Default for Config {
 			daytime: Default::default(),
 			qotd: Default::default(),
 			chargen: Basic::disabled(),
-			time: Default::default()
+			time: Default::default(),
+			hostname: Default::default()
 		}
 	}
 }
@@ -89,6 +91,7 @@ impl fmt::Display for Config {
 		writeln!(f, "Daytime: {} ", self.daytime)?;
 		writeln!(f, "QotD: {} ", self.qotd)?;
 		writeln!(f, "Chargen: {} ", self.chargen)?;
-		write!(f, "Time: {}", self.time)
+		writeln!(f, "Time: {}", self.time)?;
+		write!(f, "Hostname: {}", self.hostname)
 	}
 }

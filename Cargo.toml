@@ -9,3 +9,4 @@ apputils = "0.1.5"
 toml = "0.8"
 serde = { version = "1", features = ["derive"] }
 chrono = "0.4"
+#tokio = { version = "1.40", features = ["net", "rt-multi-thread", "macros", "io-util"] }
