@@ -13,7 +13,8 @@ use toml::from_str;
 #[derive(Deserialize)]
 pub(crate) struct Basic {
 	pub tcp: bool,
-	pub udp: bool
+	pub udp: bool,
+	pub port: u16
 }
 
 impl Basic {
@@ -22,24 +23,24 @@ impl Basic {
 	/// Creates dual-bool basic config with both TCP and UDP deactivated.
 	/// Use the [Default]-trait implementation, if you want TCP and UDP activated.
 	pub fn disabled() -> Self {
-		Self { tcp: false, udp: false }
+		Self { tcp: false, udp: false, port: 0 }
 	}
 }
 
 impl Default for Basic {
 	fn default() -> Self {
-		Self { tcp: true, udp: true }
+		Self { tcp: true, udp: true, port: 0 }
 	}
 }
 
 impl fmt::Display for Basic {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		if self.tcp && !self.udp{
-			write!(f, "TCP")
+			write!(f, "{} TCP", self.port)
 		} else if self.tcp && self.udp {
-			write!(f, "TCP+UDP")
+			write!(f, "{} TCP+UDP", self.port)
 		} else if self.udp && !self.tcp {
-			write!(f, "UDP")
+			write!(f, "{} UDP", self.port)
 		} else {
 			write!(f, "disabled")
 		}
@@ -72,7 +73,7 @@ impl Config {
 
 impl Default for Config {
 	fn default() -> Self {
-		Self {
+		let mut config = Self {
 			echo: Default::default(),
 			discard: Default::default(),
 			daytime: Default::default(),
@@ -80,7 +81,18 @@ impl Default for Config {
 			chargen: Basic::disabled(),
 			time: Default::default(),
 			hostname: Default::default()
-		}
+		};
+		
+		// Set default service ports
+		config.echo.port = 7;
+		config.discard.port = 9;
+		config.daytime.port = 13;
+		config.qotd.port = 17;
+		config.chargen.port = 19;
+		config.time.port = 37;
+		config.hostname.port = 42;
+
+		config
 	}
 }
 
