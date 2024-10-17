@@ -2,6 +2,7 @@ use crate::shared::{APP_NAME, CONFIG_FILE};
 
 use std::default::Default;
 use std::fmt;
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use apputils::config::Cfg;
 use serde::Deserialize;
@@ -10,7 +11,7 @@ use toml::from_str;
 /// Basic Service Config
 /// 
 /// A simple config struct to toggle TCP and UDP
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone, Copy)]
 pub(crate) struct Basic {
 	pub tcp: bool,
 	pub udp: bool,
@@ -47,11 +48,69 @@ impl fmt::Display for Basic {
 	}
 }
 
-/// inetdx config
+/// Listener Address Config
 /// 
-/// The very basic config for inetdx
-#[derive(Deserialize)]
+/// Configures the listener address used
+#[derive(Deserialize, Clone, Copy, Default)]
+pub(crate) struct Listener {
+	/// Use IPv6
+	///
+	/// Determines if IPv6 will be used or IPv4.
+	/// Does not matter on dual-stack systems, but on e.g. Windows.
+	pub ipv6: bool,
+
+	/// Localhost only
+	///
+	/// Determines if it should only bind to the loopback network or to any connected network.
+	pub localhost: bool
+}
+
+impl From<&Listener> for IpAddr {
+	fn from(val: &Listener) -> Self {
+		if val.ipv6 {
+			if val.localhost {
+				IpAddr::V6(Ipv6Addr::LOCALHOST)
+			} else {
+				IpAddr::V6(Ipv6Addr::UNSPECIFIED)
+			}
+		} else if val.localhost {
+			IpAddr::V4(Ipv4Addr::LOCALHOST)
+		} else {
+			IpAddr::V4(Ipv4Addr::UNSPECIFIED)
+		}
+	}
+}
+
+impl From<Listener> for IpAddr {
+	fn from(val: Listener) -> Self {
+		Self::from(&val)
+	}
+}
+
+impl From<Config> for Listener {
+	fn from(value: Config) -> Self {
+		value.listener
+	}
+}
+
+impl From<&Config> for Listener {
+	fn from(value: &Config) -> Self {
+		value.listener
+	}
+}
+
+impl fmt::Display for Listener {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", IpAddr::from(self))
+	}
+}
+
+/// inetdx master config
+/// 
+/// The top-level config for inetdx
+#[derive(Deserialize, Clone, Copy)]
 pub(crate) struct Config {
+	listener: Listener,
 	pub echo: Basic,
 	pub discard: Basic,
 	pub daytime: Basic,
@@ -71,9 +130,22 @@ impl Config {
 	}
 }
 
+impl From<Config> for IpAddr {
+	fn from(val: Config) -> Self {
+		Self::from(val.listener)
+	}
+}
+
+impl From<&Config> for IpAddr {
+	fn from(val: &Config) -> Self {
+		Self::from(val.listener)
+	}
+}
+
 impl Default for Config {
 	fn default() -> Self {
 		let mut config = Self {
+			listener: Default::default(),
 			echo: Default::default(),
 			discard: Default::default(),
 			daytime: Default::default(),
@@ -98,6 +170,7 @@ impl Default for Config {
 
 impl fmt::Display for Config {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		writeln!(f, "Listener address: {}", self.listener)?;
 		writeln!(f, "Echo: {}", self.echo)?;
 		writeln!(f, "Discard: {} ", self.discard)?;
 		writeln!(f, "Daytime: {} ", self.daytime)?;

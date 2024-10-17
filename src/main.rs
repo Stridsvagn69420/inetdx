@@ -1,4 +1,3 @@
-use std::net::Ipv4Addr;
 use std::process::ExitCode;
 
 mod config;
@@ -12,15 +11,13 @@ mod time;
 mod hostname;
 
 fn main() -> ExitCode {
+	// TODO: Add main logic
 	let cfg = config::Config::load().unwrap_or_default();
 	println!("{cfg}");
 	println!();
 
-	// Configure Server
-	let addr = Ipv4Addr::new(0, 0, 0, 0);
-	let port = 7;
-
-	if let Err(err) = echo::echo_tcp(addr, port) {
+	// Configure example Server
+	if let Err(err) = echo::echo_udp(cfg.into(), echo::PORT) {
 		println!("Could not start server ({}): {err}", err.kind());
 		ExitCode::FAILURE
 	} else {
